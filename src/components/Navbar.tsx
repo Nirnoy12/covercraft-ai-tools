@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
+import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,9 +29,9 @@ const Navbar = () => {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="#" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2">
           <span className="font-bold text-xl text-primary">ResumeAI</span>
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center space-x-8">
           <a
@@ -43,15 +46,38 @@ const Navbar = () => {
           >
             Pricing
           </a>
-          <a
-            href="#"
-            className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
-          >
-            Login
-          </a>
-          <a href="#signup" className="btn-primary text-sm">
-            Get Started Free
-          </a>
+          
+          {!isSignedIn ? (
+            <>
+              <SignInButton mode="modal">
+                <button className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+                  Login
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="btn-primary text-sm">
+                  Get Started Free
+                </button>
+              </SignUpButton>
+            </>
+          ) : (
+            <>
+              <Link 
+                to="/dashboard" 
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Dashboard
+              </Link>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-8 h-8"
+                  }
+                }}
+              />
+            </>
+          )}
         </nav>
 
         <button
@@ -81,20 +107,47 @@ const Navbar = () => {
             >
               Pricing
             </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-4 py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Login
-            </a>
-            <a
-              href="#signup"
-              className="btn-primary text-sm mx-4 text-center"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Get Started Free
-            </a>
+            
+            {!isSignedIn ? (
+              <>
+                <SignInButton mode="modal">
+                  <button 
+                    className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-4 py-2 text-left"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button 
+                    className="btn-primary text-sm mx-4 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started Free
+                  </button>
+                </SignUpButton>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-4 py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <div className="px-4 py-2">
+                  <UserButton 
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "w-8 h-8"
+                      }
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

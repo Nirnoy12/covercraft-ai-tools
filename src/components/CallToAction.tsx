@@ -1,8 +1,12 @@
 
 import React from "react";
 import { ArrowRight } from "lucide-react";
+import { SignUpButton, useAuth } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 
 const CallToAction = () => {
+  const { isSignedIn } = useAuth();
+  
   return (
     <section id="signup" className="section relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
@@ -18,10 +22,19 @@ const CallToAction = () => {
           Join thousands of professionals who have boosted their career with our AI-powered resume and cover letter generator.
         </p>
         <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <a href="#" className="btn-primary flex items-center space-x-2 group">
-            <span>Sign Up Now</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          {!isSignedIn ? (
+            <SignUpButton mode="modal">
+              <button className="btn-primary flex items-center space-x-2 group">
+                <span>Sign Up Now</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            </SignUpButton>
+          ) : (
+            <Link to="/dashboard" className="btn-primary flex items-center space-x-2 group">
+              <span>Go to Dashboard</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          )}
         </div>
       </div>
     </section>
