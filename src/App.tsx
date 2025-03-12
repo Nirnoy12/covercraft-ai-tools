@@ -18,13 +18,13 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <ClerkLoading>
-        <div className="h-screen w-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </ClerkLoading>
-      <ClerkLoaded>
-        <BrowserRouter>
+      <BrowserRouter>
+        <ClerkLoading>
+          <div className="h-screen w-full flex items-center justify-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </ClerkLoading>
+        <ClerkLoaded>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sign-in/*" element={<SignIn />} />
@@ -45,8 +45,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </ClerkLoaded>
+        </ClerkLoaded>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

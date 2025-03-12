@@ -1,17 +1,24 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { ClerkProvider } from '@clerk/clerk-react'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { ClerkProvider } from '@clerk/clerk-react';
 
+// Use environment variables in a way that works with Vite
 const PUBLISHABLE_KEY = "pk_test_cG9saXRlLW11bGxldC0xNy5jbGVyay5hY2NvdW50cy5kZXYk";
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key")
+  throw new Error("Missing Publishable Key");
 }
 
-createRoot(document.getElementById("root")!).render(
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-    <App />
-  </ClerkProvider>
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Root element not found');
+
+createRoot(rootElement).render(
+  <React.StrictMode>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <App />
+    </ClerkProvider>
+  </React.StrictMode>
 );
