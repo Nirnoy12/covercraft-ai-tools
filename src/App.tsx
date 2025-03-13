@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
+import CreateResume from "./pages/CreateResume";
+import ViewResume from "./pages/ViewResume";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,32 @@ const App = () => (
                 <>
                   <SignedIn>
                     <Dashboard />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
+              } 
+            />
+            <Route 
+              path="/create-resume" 
+              element={
+                <>
+                  <SignedIn>
+                    <CreateResume />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
+              } 
+            />
+            <Route 
+              path="/resume/:id" 
+              element={
+                <>
+                  <SignedIn>
+                    <ViewResume />
                   </SignedIn>
                   <SignedOut>
                     <Navigate to="/sign-in" replace />
