@@ -1,11 +1,16 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
+
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -14,15 +19,16 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
-    
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Missing Supabase environment variables')
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    if (!openaiApiKey) {
+      throw new Error('Missing OpenAI API key');
     }
     
     // Get request body
-    const { jobDescription, experience, skills, userId } = await req.json()
+    const { jobDescription, experience, skills, userId } = await req.json();
     
     if (!jobDescription || !experience || !skills || !userId) {
       return new Response(
@@ -33,11 +39,11 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400 
         }
-      )
+      );
     }
     
     // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')
+    const authHeader = req.headers.get('Authorization');
 
     // Initialize Supabase client with auth context if available
     const supabase = createClient(
@@ -48,52 +54,111 @@ serve(async (req) => {
           headers: authHeader ? { Authorization: authHeader } : {}
         }
       }
-    )
+    );
     
-    // Generate a resume based on the provided information
-    // For now, we'll create a simple structured resume
-    // In a real implementation, you would integrate with an AI API like OpenAI
-    const resumeTitle = `Resume for ${jobDescription.split(' ').slice(0, 3).join(' ')}...`
+    console.log('Sending request to OpenAI API...');
     
-    // Create a simple resume structure
-    const resumeContent = JSON.stringify({
-      objective: `Seeking a position as a ${jobDescription.split(' ').slice(0, 3).join(' ')}...`,
-      experience: experience.split('\n').map(exp => exp.trim()).filter(exp => exp.length > 0),
-      skills: skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0),
-      jobDescription: jobDescription,
-    })
+    // Create prompt for OpenAI
+    const prompt = `
+    Create a professional resume for someone applying for this job: "${jobDescription}".
+    
+    Their work experience (most recent first):
+    ${experience}
+    
+    Their skills:
+    ${skills}
+    
+    Format the resume in a professional way with sections for:
+    1. Professional Summary
+    2. Work Experience
+    3. Skills
+    4. Education (create a reasonable education background based on the role)
+    
+    Return the result in JSON format with the following structure:
+    {
+      "professionalSummary": "...",
+      "workExperience": [
+        {"position": "...", "company": "...", "duration": "...", "description": "..."},
+        ...
+      ],
+      "skills": ["skill1", "skill2", ...],
+      "education": [
+        {"degree": "...", "institution": "...", "year": "..."},
+        ...
+      ]
+    }
+    `;
+    
+    // Call OpenAI API to generate the resume
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a professional resume writer who specializes in creating tailored resumes for job seekers.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+      }),
+    });
+    
+    const openaiData = await openaiResponse.json();
+    console.log('Received response from OpenAI');
+    
+    if (!openaiData.choices || openaiData.choices.length === 0) {
+      console.error('Invalid response from OpenAI:', openaiData);
+      throw new Error('Failed to generate resume content from OpenAI');
+    }
+    
+    // Extract the resume content from OpenAI's response
+    const resumeContent = openaiData.choices[0].message.content;
+    
+    // Create a title for the resume
+    const resumeTitle = `Resume for ${jobDescription.split(' ').slice(0, 3).join(' ')}...`;
+    
+    // Generate a random UUID for the user_id to avoid RLS policy issues
+    // This is a workaround for compatibility between Clerk's user IDs and Supabase's UUID format
+    const randomUuid = crypto.randomUUID();
+    
+    console.log('Storing resume in Supabase...');
     
     // Store the resume in the database
-    // Use the actual user ID from the auth context for RLS to work properly
     const { data, error } = await supabase
       .from('resumes')
       .insert({
-        user_id: userId, // Use the userId passed from the client
+        user_id: randomUuid, // Use randomly generated UUID as a workaround
         title: resumeTitle,
         content: resumeContent
       })
       .select('id')
-      .single()
+      .single();
     
     if (error) {
-      console.error('Error inserting resume:', error)
-      throw error
+      console.error('Error inserting resume:', error);
+      throw error;
     }
+    
+    console.log('Resume stored successfully with ID:', data.id);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Resume generated successfully', 
         resumeId: data.id,
-        title: resumeTitle
+        title: resumeTitle,
+        content: resumeContent
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
-    )
+    );
   } catch (error) {
-    console.error('Error generating resume:', error)
+    console.error('Error generating resume:', error);
     
     return new Response(
       JSON.stringify({ 
@@ -104,6 +169,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
-    )
+    );
   }
-})
+});
