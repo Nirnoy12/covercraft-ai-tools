@@ -1,12 +1,13 @@
 
 import React, { useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const CreateResume = () => {
   const { isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -39,8 +40,8 @@ const CreateResume = () => {
     setIsGenerating(true);
     
     try {
-      // Get the session token from Clerk to pass to Supabase
-      const token = await user.getToken();
+      // Get the session token from Clerk using the auth hook
+      const token = await getToken();
       
       // Call the Edge Function to generate the resume with auth headers
       const { data, error } = await supabase.functions.invoke('generate-resume', {
