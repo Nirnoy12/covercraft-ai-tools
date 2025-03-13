@@ -52,10 +52,11 @@ serve(async (req) => {
     })
     
     // Store the resume in the database
+    // Use a UUID generated on the server side instead of the Clerk user ID
     const { data, error } = await supabase
       .from('resumes')
       .insert({
-        user_id: userId,
+        user_id: crypto.randomUUID(), // Generate a random UUID that's compatible with Supabase
         title: resumeTitle,
         content: resumeContent
       })
