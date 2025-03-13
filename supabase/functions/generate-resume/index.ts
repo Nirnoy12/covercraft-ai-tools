@@ -21,8 +21,6 @@ serve(async (req) => {
       throw new Error('Missing Supabase environment variables')
     }
     
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    
     // Get request body
     const { jobDescription, experience, skills, userId } = await req.json()
     
@@ -38,6 +36,20 @@ serve(async (req) => {
       )
     }
     
+    // Get the authorization header from the request
+    const authHeader = req.headers.get('Authorization')
+
+    // Initialize Supabase client with auth context if available
+    const supabase = createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        global: {
+          headers: authHeader ? { Authorization: authHeader } : {}
+        }
+      }
+    )
+    
     // Generate a resume based on the provided information
     // For now, we'll create a simple structured resume
     // In a real implementation, you would integrate with an AI API like OpenAI
@@ -52,11 +64,11 @@ serve(async (req) => {
     })
     
     // Store the resume in the database
-    // Use a UUID generated on the server side instead of the Clerk user ID
+    // Use the actual user ID from the auth context for RLS to work properly
     const { data, error } = await supabase
       .from('resumes')
       .insert({
-        user_id: crypto.randomUUID(), // Generate a random UUID that's compatible with Supabase
+        user_id: userId, // Use the userId passed from the client
         title: resumeTitle,
         content: resumeContent
       })

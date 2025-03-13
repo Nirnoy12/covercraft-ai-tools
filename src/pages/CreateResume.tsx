@@ -39,13 +39,19 @@ const CreateResume = () => {
     setIsGenerating(true);
     
     try {
-      // Call the Edge Function to generate the resume
+      // Get the session token from Clerk to pass to Supabase
+      const token = await user.getToken();
+      
+      // Call the Edge Function to generate the resume with auth headers
       const { data, error } = await supabase.functions.invoke('generate-resume', {
         body: {
           jobDescription,
           experience,
           skills,
           userId: user.id
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
         }
       });
       
