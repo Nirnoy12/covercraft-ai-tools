@@ -120,17 +120,14 @@ serve(async (req) => {
     // Create a title for the resume
     const resumeTitle = `Resume for ${jobDescription.split(' ').slice(0, 3).join(' ')}...`;
     
-    // Generate a random UUID for the user_id to avoid RLS policy issues
-    // This is a workaround for compatibility between Clerk's user IDs and Supabase's UUID format
-    const randomUuid = crypto.randomUUID();
-    
+    // Store the resume in the database
     console.log('Storing resume in Supabase...');
     
     // Store the resume in the database
     const { data, error } = await supabase
       .from('resumes')
       .insert({
-        user_id: randomUuid, // Use randomly generated UUID as a workaround
+        user_id: userId,
         title: resumeTitle,
         content: resumeContent
       })
