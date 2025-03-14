@@ -42,8 +42,10 @@ const CreateResume = () => {
     setGeneratedResume(null);
     
     try {
-      // Get the session token from Clerk using the auth hook
-      const token = await getToken();
+      // Get the token from Clerk auth hook
+      const token = await getToken({ template: "supabase" });
+      
+      console.log("Calling generate-resume function with userId:", user.id);
       
       // Call the Edge Function to generate the resume with auth headers
       const { data, error } = await supabase.functions.invoke('generate-resume', {

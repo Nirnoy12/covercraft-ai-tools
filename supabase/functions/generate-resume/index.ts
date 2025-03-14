@@ -120,10 +120,10 @@ serve(async (req) => {
     // Create a title for the resume
     const resumeTitle = `Resume for ${jobDescription.split(' ').slice(0, 3).join(' ')}...`;
     
-    // Store the resume in the database
     console.log('Storing resume in Supabase...');
     
-    // Store the resume in the database
+    // Create a string-based ID column to store the Clerk user ID
+    // This avoids the UUID format conflict
     const { data, error } = await supabase
       .from('resumes')
       .insert({
