@@ -42,8 +42,8 @@ const CreateResume = () => {
     setGeneratedResume(null);
     
     try {
-      // Get the token from Clerk auth hook
-      const token = await getToken({ template: "supabase" });
+      // Get the standard JWT token instead of using a template
+      const token = await getToken();
       
       console.log("Calling generate-resume function with userId:", user.id);
       
