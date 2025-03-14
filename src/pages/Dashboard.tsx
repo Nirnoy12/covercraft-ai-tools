@@ -5,6 +5,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ResumeItem from "@/components/ResumeItem";
+import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
   const { isSignedIn, user } = useUser();
@@ -97,8 +98,8 @@ const Dashboard = () => {
         <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-medium text-gray-900">Your Resumes</h2>
-            <Link to="/create-resume" className="btn-primary text-sm">
-              Create New Resume
+            <Link to="/create-resume">
+              <Button size="sm">Create New Resume</Button>
             </Link>
           </div>
           
@@ -132,13 +133,17 @@ const Dashboard = () => {
           <div className="bg-white shadow-sm rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Resume</h3>
             <p className="text-gray-600 mb-4">Start building your professional resume with our AI-powered tools.</p>
-            <Link to="/create-resume" className="btn-primary text-sm inline-block">Create Resume</Link>
+            <Link to="/create-resume">
+              <Button>Create Resume</Button>
+            </Link>
           </div>
           
           <div className="bg-white shadow-sm rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Cover Letter</h3>
             <p className="text-gray-600 mb-4">Generate a matching cover letter to increase your chances of getting hired.</p>
-            <button className="btn-primary text-sm">Create Cover Letter</button>
+            <Link to="/create-cover-letter">
+              <Button>Create Cover Letter</Button>
+            </Link>
           </div>
         </div>
       </main>
